@@ -33,14 +33,17 @@ public class MembershipController {
         return new ResponseEntity<>(new ArrayList<>(MembershipRepo.getMembershipAll().values()), HttpStatus.OK);
     }
 
-    @PutMapping("/membership/add")
+    @PostMapping("/membership/add")
+    // TODO: refactor this method to split add_USER (if not applicable need to add to waitlist), add_WAITLIST, add_ADMIN (need to make sure admin is also user)
     public ResponseEntity<String> addMembership(String groupName, String memberName, String roleName) {
         if(!ROLES.contains(roleName)){
             return new ResponseEntity<>(ExceptionMessages.INVALID_ROLE_EXCEPTION, HttpStatus.BAD_REQUEST);
         }
 
         Membership existingMembership = MembershipRepo.getMembershipByName(memberName, groupName);
-        if( existingMembership != null && existingMembership.getRole().getName().equals(roleName)) {
+        if( existingMembership != null &&
+                (existingMembership.getRole().getName().equals(roleName) ||
+                        existingMembership.getRole().getName().equals(WAITLIST))) { // A member can be both admin and user, but cannot have any other role other than waitlist
             return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_ALREADY_EXISTS_EXCEPTION, HttpStatus.CONFLICT);
         }
 
@@ -57,9 +60,12 @@ public class MembershipController {
         Role role = new Role(roleName);
         Membership newMembership = new Membership(group, member, role);
 
-        if (roleName.equals(USER)) {
+        if (roleName.equals(USER) || roleName.equals(ADMIN)) {
             if (MembershipRepo.getGroupSize(groupName) < GroupRepo.getGroupByName(groupName).getMaxMembers()) {
                 MembershipRepo.addMembership(newMembership);
+                if (roleName.equals(ADMIN) && existingMembership == null ) { // ADMIN must also be a USER
+                    MembershipRepo.addMembership(new Membership(group, member, new Role(USER)));
+                }
                 return new ResponseEntity<>(SuccessMessages.ADD_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
             }
             else {
@@ -67,13 +73,13 @@ public class MembershipController {
             }
         }
 
-        else { // TODO: Add restrictions on the number of admins and waitlists of each group
+        else { // TODO: Add restrictions on the number of waitlists of each group
             MembershipRepo.addMembership(newMembership);
             return new ResponseEntity<>(SuccessMessages.ADD_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
         }
     }
 
-    @PostMapping("/membership/delete")
+    @DeleteMapping("/membership/delete")
     public ResponseEntity<String> deleteMembership(@RequestParam String groupName,
                                                    @RequestParam String memberName,
                                                    @Nullable @RequestParam String roleName) {
@@ -91,7 +97,9 @@ public class MembershipController {
     }
 
     @PostMapping("/membership/clean-up")
-    public ResponseEntity<String> cleanupMembership(String groupName, String memberName, @Nullable LocalDate deadlineDate) {
+    public ResponseEntity<String> cleanupMembership(@RequestParam String groupName,
+                                                    @RequestParam String memberName,
+                                                    @Nullable LocalDate deadlineDate) {
         Group group = GroupRepo.getGroupByName(groupName);
         if ( group == null) {
             return new ResponseEntity<>(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
@@ -192,6 +200,9 @@ public class MembershipController {
 
     private boolean isActive(Member member, Group group, LocalDate deadlineDate) {
         LocalDateTime memberLastCheckin = member.getLastCheckIn();
+        if (memberLastCheckin == null) {
+            return false;
+        }
         LocalDateTime deadlineCheckin = deadlineDate.atTime(group.getStartOfTheDay());
         long daysBetween = Duration.between(memberLastCheckin, deadlineCheckin).toDays();
         return daysBetween <= group.getStrikeLimit();

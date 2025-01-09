@@ -40,7 +40,10 @@ public class LogBookController {
             newLog.setTimestamp(timestamp);
         }
         BookLogRepo.addBookLog(newLog);
-        member.setLastCheckIn(newLog.getTimestamp());
+        if(member.getLastCheckIn() == null || newLog.getTimestamp().isAfter(member.getLastCheckIn())) {
+            member.setLastCheckIn(newLog.getTimestamp());
+        }
+
         return new ResponseEntity<>(SuccessMessages.ADD_BOOK_LOG_MESSAGE, HttpStatus.CREATED);
     }
 }
