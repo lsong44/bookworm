@@ -4,6 +4,7 @@ import com.li.bookworm.constants.ExceptionMessages;
 import com.li.bookworm.constants.SuccessMessages;
 import com.li.bookworm.model.Group;
 import com.li.bookworm.repository.GroupRepo;
+import com.li.bookworm.repository.MembershipRepo;
 import io.micrometer.common.lang.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class GroupController {
 			return new ResponseEntity<>(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
 		}
 		GroupRepo.deleteGroup(existingGroup);
+		MembershipRepo.deleteMembershipByGroup(existingGroup); // if a group is deleted, remove all membership for that group
 		return new ResponseEntity<>(SuccessMessages.DELETE_GROUP_MESSAGE, HttpStatus.NO_CONTENT);
 	}
 

@@ -1,6 +1,8 @@
 package com.li.bookworm.repository;
 
 import com.li.bookworm.constants.RoleConstants;
+import com.li.bookworm.model.Group;
+import com.li.bookworm.model.Member;
 import com.li.bookworm.model.Membership;
 import com.li.bookworm.model.Role;
 import com.li.bookworm.util.Tuple;
@@ -36,6 +38,14 @@ public class MembershipRepo {
         }
     }
 
+    public static void deleteMembershipByMember(Member member) {
+        deleteMembershipBatch(member.getName(), 1);
+    }
+
+    public static void deleteMembershipByGroup(Group group) {
+        deleteMembershipBatch(group.getName(), 2);
+    }
+
     public static int getGroupSize(String groupName) {
         return getGroupUsers(groupName).size();
     }
@@ -66,5 +76,21 @@ public class MembershipRepo {
             }
         }
         return waitlist;
+    }
+
+    private static void deleteMembershipBatch(String keyName, int whichKey) {
+        List<Tuple<String, String>> keysToRemove = new ArrayList<>();
+        for (Tuple<String, String> key : membershipAll.keySet()) {
+            String currentKeyName = null;
+            if (whichKey == 1) currentKeyName = key.first;
+            else if (whichKey == 2) currentKeyName = key.second;
+            if (currentKeyName != null && currentKeyName.equals(keyName)) {
+                keysToRemove.add(key);
+            }
+        }
+
+        for (Tuple<String, String> key : keysToRemove) {
+            membershipAll.remove(key);
+        }
     }
 }

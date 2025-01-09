@@ -4,6 +4,7 @@ import com.li.bookworm.constants.ExceptionMessages;
 import com.li.bookworm.constants.SuccessMessages;
 import com.li.bookworm.model.Member;
 import com.li.bookworm.repository.MemberRepo;
+import com.li.bookworm.repository.MembershipRepo;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ public class MemberController {
 			return new ResponseEntity<>(ExceptionMessages.MEMBER_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
 		}
 		MemberRepo.deleteMember(member);
+		MembershipRepo.deleteMembershipByMember(member); // if a member is deleted, remove all membership for that member
 		return new ResponseEntity<>(SuccessMessages.DELETE_MEMBER_MESSAGE, HttpStatus.NO_CONTENT);
 	}
 
