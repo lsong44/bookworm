@@ -45,8 +45,11 @@ public class GroupController {
 	}
 
 	@PutMapping("/group/edit")
-	public ResponseEntity<String> editGroup(@RequestParam String name, @Nullable String announcement, @Nullable LocalTime startOfTheDay,
-											@Nullable Integer maxMembers, @Nullable Integer strikeLimit) {
+	public ResponseEntity<String> editGroup(@RequestParam String name,
+											@RequestParam @Nullable String announcement,
+											@RequestParam @Nullable LocalTime startOfTheDay,
+											@RequestParam @Nullable Integer maxMembers,
+											@RequestParam @Nullable Integer strikeLimit) {
 
 		Group existingGroup = GroupRepo.getGroups().get(name);
 		if (existingGroup == null) {

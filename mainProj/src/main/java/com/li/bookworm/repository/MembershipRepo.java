@@ -5,53 +5,64 @@ import com.li.bookworm.model.Membership;
 import com.li.bookworm.model.Role;
 import com.li.bookworm.util.Tuple;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MembershipRepo {
-    public static Map<Tuple<String, String>,Membership> membershipAll = new HashMap<>();
+    public static Map<Tuple<String, String>,List<Membership>> membershipAll = new HashMap<>();
 
-    public static Map<Tuple<String, String>,Membership> getMembershipAll() {
+    public static Map<Tuple<String, String>,List<Membership>> getMembershipAll() {
         return membershipAll;
     }
 
-    public static Membership getMembershipByName(String memberName, String groupName) {
+    public static List<Membership> getMembershipByName(String memberName, String groupName) {
         Tuple<String, String> key = new Tuple<>(memberName, groupName);
         return membershipAll.get(key);
     }
 
     public static void addMembership(Membership membership){
-        membershipAll.put(membership.getKey(), membership);
+        if (membershipAll.containsKey(membership.getKey())) {
+            membershipAll.get(membership.getKey()).add(membership);
+        }
+        else {membershipAll.put(membership.getKey(),
+                new ArrayList<>(Collections.singletonList(membership)));
+        }
     }
 
     public static void deleteMembership(Membership membership) {
-
-        membershipAll.remove(membership.getKey());
+        List<Membership> memberships = membershipAll.get(membership.getKey());
+        memberships.remove(membership);
+        if (memberships.isEmpty()) {
+            membershipAll.remove(membership.getKey());
+        }
     }
 
     public static int getGroupSize(String groupName) {
-        int size = 0;
-        for (Map.Entry<Tuple<String, String>, Membership> entry : membershipAll.entrySet()) {
+        return getGroupUsers(groupName).size();
+    }
+
+    public static List<Membership> getGroupUsers(String groupName) {
+        List<Membership> groupUsers = new ArrayList<>();
+        for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
             String entryGroupName = entry.getKey().second;
-            Membership entryMembership = entry.getValue();
-            Role entryMemberRole = entryMembership.getRole();
-            if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(RoleConstants.USER) ) {
-                size++;
+            for(Membership entryMembership : entry.getValue()) {
+                Role entryMemberRole = entryMembership.getRole();
+                if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(RoleConstants.USER) ) {
+                    groupUsers.add(entryMembership);
+                }
             }
         }
-        return size;
+        return groupUsers;
     }
 
     public static List<Membership> getWaitlist(String groupName) {
         List<Membership> waitlist = new ArrayList<>();
-        for (Map.Entry<Tuple<String, String>, Membership> entry : membershipAll.entrySet()) {
+        for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
             String entryGroupName = entry.getKey().second;
-            Membership entryMembership = entry.getValue();
-            Role entryMemberRole = entryMembership.getRole();
-            if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(RoleConstants.WAITLIST) ) {
-                waitlist.add(entryMembership);
+            for(Membership entryMembership : entry.getValue()) {
+                Role entryMemberRole = entryMembership.getRole();
+                if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(RoleConstants.WAITLIST) ) {
+                    waitlist.add(entryMembership);
+                }
             }
         }
         return waitlist;
