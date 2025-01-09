@@ -7,6 +7,7 @@ public class SuccessMessages {
     public static final String ADD_MEMBERSHIP_MESSAGE = "Successfully added a new membership.";
     public static final String DELETE_MEMBERSHIP_MESSAGE = "Successfully deleted an existing memberhip.";
     public static final String MAINTAIN_MEMBERSHIP_MESSAGE = "The member is active. Successfully maintained their membership.";
+    public static final String CLEANUP_MEMBERSHIP_MESSAGE = "Successfully kicked out inactive members.";
     public static final String EDIT_MEMBERSHIP_MESSAGE = "Successfully edited an existing membership.";
     public static final String PROMOTE_MEMBERSHIP_MESSAGE = "Successfully added members to group.";
     public static final String ADD_GROUP_MESSAGE = "Successfully added a new group.";

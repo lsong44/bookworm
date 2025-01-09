@@ -8,6 +8,7 @@ import com.li.bookworm.model.Membership;
 import com.li.bookworm.model.Role;
 import com.li.bookworm.repository.GroupRepo;
 import com.li.bookworm.repository.MemberRepo;
+import com.li.bookworm.util.Tuple;
 import io.micrometer.common.lang.Nullable;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,7 @@ import com.li.bookworm.repository.MembershipRepo;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.li.bookworm.constants.RoleConstants.*;
 
@@ -29,8 +28,8 @@ import static com.li.bookworm.constants.RoleConstants.*;
 @RequestMapping("/api")
 public class MembershipController {
     @GetMapping("/memberships")
-    public ResponseEntity<List<Membership>> listMembership(){
-        return new ResponseEntity<>(new ArrayList<>(MembershipRepo.getMembershipAll().values()), HttpStatus.OK);
+    public ResponseEntity<Map<Tuple<String, String>, List<Membership>>> listMembership(){
+        return new ResponseEntity<>(MembershipRepo.getMembershipAll(), HttpStatus.OK);
     }
 
     @PostMapping("/membership/add")
@@ -40,11 +39,13 @@ public class MembershipController {
             return new ResponseEntity<>(ExceptionMessages.INVALID_ROLE_EXCEPTION, HttpStatus.BAD_REQUEST);
         }
 
-        Membership existingMembership = MembershipRepo.getMembershipByName(memberName, groupName);
-        if( existingMembership != null &&
-                (existingMembership.getRole().getName().equals(roleName) ||
-                        existingMembership.getRole().getName().equals(WAITLIST))) { // A member can be both admin and user, but cannot have any other role other than waitlist
-            return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_ALREADY_EXISTS_EXCEPTION, HttpStatus.CONFLICT);
+        List<Membership> existingMemberships = MembershipRepo.getMembershipByName(memberName, groupName);
+        if( existingMemberships != null ) {
+            for (Membership existingMembership : existingMemberships) {
+                if (existingMembership.getRole().getName().equals(roleName)) {
+                    return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_ALREADY_EXISTS_EXCEPTION, HttpStatus.CONFLICT);
+                }
+            }
         }
 
         Member member = MemberRepo.getMemberByName(memberName);
@@ -60,12 +61,9 @@ public class MembershipController {
         Role role = new Role(roleName);
         Membership newMembership = new Membership(group, member, role);
 
-        if (roleName.equals(USER) || roleName.equals(ADMIN)) {
+        if (roleName.equals(USER)) {
             if (MembershipRepo.getGroupSize(groupName) < GroupRepo.getGroupByName(groupName).getMaxMembers()) {
                 MembershipRepo.addMembership(newMembership);
-                if (roleName.equals(ADMIN) && existingMembership == null ) { // ADMIN must also be a USER
-                    MembershipRepo.addMembership(new Membership(group, member, new Role(USER)));
-                }
                 return new ResponseEntity<>(SuccessMessages.ADD_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
             }
             else {
@@ -73,7 +71,7 @@ public class MembershipController {
             }
         }
 
-        else { // TODO: Add restrictions on the number of waitlists of each group
+        else { // TODO: Add restrictions on the number of waitlists and admin of each group
             MembershipRepo.addMembership(newMembership);
             return new ResponseEntity<>(SuccessMessages.ADD_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
         }
@@ -87,31 +85,29 @@ public class MembershipController {
             return new ResponseEntity<>(ExceptionMessages.INVALID_ROLE_EXCEPTION, HttpStatus.BAD_REQUEST);
         }
 
-        Membership membership = MembershipRepo.getMembershipByName(memberName, groupName);
-        if ( membership == null || (roleName != null && !membership.getRole().getName().equals(roleName))) {
+        List<Membership> memberships = MembershipRepo.getMembershipByName(memberName, groupName);
+        if ( memberships == null) {
             return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
         }
+        for(Membership membership : memberships) {
+            if (roleName == null || membership.getRole().getName().equals(roleName)) {
+                MembershipRepo.deleteMembership(membership);
+            }
+        }
 
-        MembershipRepo.deleteMembership(membership);
         return new ResponseEntity<>(SuccessMessages.DELETE_MEMBERSHIP_MESSAGE, HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/membership/clean-up")
     public ResponseEntity<String> cleanupMembership(@RequestParam String groupName,
-                                                    @RequestParam String memberName,
                                                     @Nullable LocalDate deadlineDate) {
         Group group = GroupRepo.getGroupByName(groupName);
         if ( group == null) {
             return new ResponseEntity<>(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
         }
 
-        Member member = MemberRepo.getMemberByName(memberName);
-        if ( member == null) {
-            return new ResponseEntity<>(ExceptionMessages.MEMBER_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
-        }
-
-        Membership membership = MembershipRepo.getMembershipByName(memberName, groupName);
-        if ( membership == null) {
+        List<Membership> groupUsers = MembershipRepo.getGroupUsers(groupName);
+        if ( groupUsers.isEmpty()) {
             return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
         }
 
@@ -119,12 +115,12 @@ public class MembershipController {
             deadlineDate = LocalDate.now();
         }
 
-        if (membership.getRole().getName().equals(USER) && !isActive(member, group, deadlineDate)) {
-            MembershipRepo.deleteMembership(membership);
-            return new ResponseEntity<>(SuccessMessages.DELETE_MEMBERSHIP_MESSAGE, HttpStatus.NO_CONTENT);
+        for(Membership membership : groupUsers) {
+            if (!isActive(membership.getMember(), group, deadlineDate)) {
+                MembershipRepo.deleteMembership(membership);
+            }
         }
-        return new ResponseEntity<>(SuccessMessages.MAINTAIN_MEMBERSHIP_MESSAGE, HttpStatus.NO_CONTENT);
-
+        return new ResponseEntity<>(SuccessMessages.CLEANUP_MEMBERSHIP_MESSAGE, HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/membership/promote/batch")
@@ -162,39 +158,51 @@ public class MembershipController {
         return new ResponseEntity<>(SuccessMessages.PROMOTE_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
     }
 
-    @PostMapping("/membership/promote")
-    public ResponseEntity<String> promoteMembership(String memberName, String groupName) {
-        Membership existingMembership = MembershipRepo.getMembershipByName(memberName, groupName);
-        if (existingMembership == null) {
-            return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
+
+    private void promoteMembership(String memberName, String groupName) {
+        List<Membership> existingMemberships = MembershipRepo.getMembershipByName(memberName, groupName);
+        if (existingMemberships == null || existingMemberships.size() == MAX_ROLES_PER_MEMBER_GROUP) {
+            return;
+        }
+        
+        Membership existingMembership = existingMemberships.get(0);
+        Role role = existingMembership.getRole();
+        if (role.getName().equals(USER)) { // already a user
+            return;
+        }
+        else {// promote WAITLIST to USER only when group is not full
+            if (MembershipRepo.getGroupSize(groupName) < GroupRepo.getGroupByName(groupName).getMaxMembers()) {
+                Role newRole = new Role(USER);
+                editMembership(memberName, groupName, newRole);
+            } else {
+                return;
+            }
         }
 
-        Role role = existingMembership.getRole();
-        if (role.getName().equals(ADMIN)) {
-            return new ResponseEntity<>(ExceptionMessages.ROLE_ALREADY_ADMIN, HttpStatus.CONFLICT);
-        }
-        if (role.getName().equals(USER)) {
-            Role newRole = new Role(ADMIN);
-            return editMembership(memberName, groupName, newRole);
-        }
-        // role.getName().equals(WAITLIST)
-        if (MembershipRepo.getGroupSize(groupName) < GroupRepo.getGroupByName(groupName).getMaxMembers()) {
-            Role newRole = new Role(USER);
-            return editMembership(memberName, groupName, newRole);
-        }
-        else{
-            return new ResponseEntity<>(ExceptionMessages.GROUP_AT_MAX_CAPACITY, HttpStatus.BAD_REQUEST);
-        }
     }
 
     @PostMapping("/membership/edit")
-    public ResponseEntity<String> editMembership(String memberName, String groupName, Role role) {
-        Membership existingMembership = MembershipRepo.getMembershipByName(memberName, groupName);
-        if (existingMembership == null) {
+    public ResponseEntity<String> editMembership(@RequestBody String memberName,
+                                                 @RequestBody String groupName,
+                                                 @RequestBody Role role) {
+        List<Membership> existingMemberships = MembershipRepo.getMembershipByName(memberName, groupName);
+        if (existingMemberships == null) {
             return new ResponseEntity<>(ExceptionMessages.MEMBERSHIP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
         }
 
+        if (existingMemberships.size() == MAX_ROLES_PER_MEMBER_GROUP) {
+            if (role.getName().equals("WAITLIST")) { //remove USER and ADMIN and add WAITLIST
+                existingMemberships.get(0).setRole(role);
+                existingMemberships.remove(1);
+                return new ResponseEntity<>(SuccessMessages.EDIT_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
+            }
+            return new ResponseEntity<>(ExceptionMessages.INVALID_ROLE_EXCEPTION, HttpStatus.BAD_REQUEST);
+        }
+
+
+        Membership existingMembership = existingMemberships.get(0);
         existingMembership.setRole(role);
+
         return new ResponseEntity<>(SuccessMessages.EDIT_MEMBERSHIP_MESSAGE, HttpStatus.CREATED);
     }
 
