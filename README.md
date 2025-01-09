@@ -36,13 +36,21 @@ To install and run the BookWorm application, follow these steps:
    cd BookWorm/mainProj
    ```
 1. Build the project using Maven
-  ```sh
-  mvn clean install
-  ```
+
+    ```sh
+    mvn clean install
+    ```   
+
 1. Run the applicaion
-  ```sh
-  java -jar target/bookworm-0.0.1-SNAPSHOT.jar
-  ```
+
+    ```sh
+    java -jar target/bookworm-0.0.1-SNAPSHOT.jar
+    ```
+    or
+
+    ```sh
+    mvn spring-boot:run
+    ```
 
 ## Usage
 Once the application is running, you can access the API endpoints to manage your reading activities.

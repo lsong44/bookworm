@@ -23,7 +23,7 @@ public class GroupController {
 		return new ResponseEntity<>(groupList, HttpStatus.OK);
 	}
 
-	@PostMapping("/group/delete")
+	@DeleteMapping("/group/delete")
 	public ResponseEntity<String> deleteGroup(@RequestParam String name) {
 		Group existingGroup = GroupRepo.getGroups().get(name);
 		if ( existingGroup == null) {
@@ -45,7 +45,7 @@ public class GroupController {
 	}
 
 	@PutMapping("/group/edit")
-	public ResponseEntity<String> editGroup(String name, @Nullable String announcement, @Nullable LocalTime startOfTheDay,
+	public ResponseEntity<String> editGroup(@RequestParam String name, @Nullable String announcement, @Nullable LocalTime startOfTheDay,
 											@Nullable Integer maxMembers, @Nullable Integer strikeLimit) {
 
 		Group existingGroup = GroupRepo.getGroups().get(name);

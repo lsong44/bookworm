@@ -21,7 +21,7 @@ public class MemberController {
 		return new ResponseEntity<>(new ArrayList<Member>(MemberRepo.getMembers().values()), HttpStatus.OK);
 	}
 
-	@PutMapping("/member/register")
+	@PostMapping("/member/register")
 	public ResponseEntity<String> addMember(@RequestParam String name, @RequestParam String email) {
 		if (MemberRepo.getMemberByName(name) != null) {
 			return new ResponseEntity<>(ExceptionMessages.MEMBER_ALREADY_EXISTS_EXCEPTOIN, HttpStatus.CONFLICT);
@@ -31,13 +31,13 @@ public class MemberController {
 		return new ResponseEntity<>(SuccessMessages.ADD_MEMBER_MESSAGE, HttpStatus.CREATED);
 	}
 
-	@PostMapping("/member/delete")
-	public ResponseEntity<String> deleteMember(@RequestParam String name, @RequestParam String email) {
+	@DeleteMapping("/member/delete")
+	public ResponseEntity<String> deleteMember(@RequestParam String name) {
 		Member member = MemberRepo.getMemberByName(name);
 		if(member == null){
 			return new ResponseEntity<>(ExceptionMessages.MEMBER_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
 		}
-		MemberRepo.deleteMember(new Member(name, email));
+		MemberRepo.deleteMember(member);
 		return new ResponseEntity<>(SuccessMessages.DELETE_MEMBER_MESSAGE, HttpStatus.NO_CONTENT);
 	}
 
