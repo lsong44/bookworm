@@ -60,4 +60,8 @@ jobs:
           app-name: 'BookWorm'
           slot-name: 'Production'
           package: '*.jar'
+          app-settings: |
+            ACCOUNT_KEY=${{ secrets.COSMOSDB_KEY }}
+            ACCOUNT_HOST=${{ secrets.COSMOSDB_HOST }}
+            DB_NAME=db-bookworm
           
