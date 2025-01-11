@@ -1,26 +1,62 @@
 package com.li.bookworm.repository;
 
+import com.azure.cosmos.CosmosAsyncContainer;
+import com.azure.cosmos.models.CosmosItemRequestOptions;
+import com.azure.cosmos.models.CosmosQueryRequestOptions;
+import com.azure.cosmos.models.PartitionKey;
+import com.azure.cosmos.util.CosmosPagedFlux;
+import com.li.bookworm.model.Group;
 import com.li.bookworm.model.Member;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class MemberRepo {
-    private static Map<String, Member> members = new HashMap<>();
+    private final CosmosAsyncContainer container;
+    private Map<String, Member> members;
 
-    public static Map<String, Member> getMembers() {
+    @Autowired
+    public MemberRepo(CosmosAsyncContainer cosmosMemberContainer) {
+        this.container = cosmosMemberContainer;
+        members = loadAllMembers();
+    }
+
+    public Map<String, Member> getMembers() {
         return members;
     }
 
-    public static Member getMemberByName(String memberName) {
+    public Member getMemberByName(String memberName) {
         return members.get(memberName);
     }
 
-    public static void addMember(Member member) {
+    public void addMember(Member member) {
         members.put(member.getName(), member);
+
+        PartitionKey partitionKey = new PartitionKey(member.getName());
+        container.createItem(member, partitionKey, new CosmosItemRequestOptions()).block();
     }
 
-    public static void deleteMember(Member member) {
+    public void deleteMember(Member member) {
+
         members.remove(member.getName());
+
+        PartitionKey partitionKey = new PartitionKey(member.getName());
+        container.deleteItem(member.getId().toString(), partitionKey).block();
+    }
+
+    private Map<String, Member> loadAllMembers() {
+        Map<String, Member> allMembers = new HashMap<>();
+
+        CosmosPagedFlux<Member> pagedFlux = container.queryItems(
+                "SELECT * FROM c", new CosmosQueryRequestOptions(), Member.class);
+
+        pagedFlux.byPage().toIterable().forEach(feedResponse -> {
+            feedResponse.getResults().forEach(member -> allMembers.put(member.getName(), member));
+        });
+
+        return allMembers;
     }
 
 }

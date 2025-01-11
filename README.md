@@ -21,35 +21,54 @@ BookWorm is a simple application designed to help users manage their reading gro
 - Create and manage groups
 - Add and remove members
 - Track reading activities
-- Promote members to different roles
+- Promote members from waitlist to users
 - Manage waitlists
 
 ## Installation
 
-To install and run the BookWorm application, follow these steps:
+To install and run the BookWorm application locally, follow these steps:
+
+### Prerequisites
 
 1. Install Java-17 Open JDK and Maven 3.8.8 locally
+1. Install Azure Cosmos DB emulator and start the emulator
+1. Set up SSL certificate by first downloading the cert for https://localhost:8081/_explorer/index.html from browser (click the pad lock on the left of the url and export the cert), and then convert it to .jks file and set store password with the following command
+
+    ```sh
+    keytool -import -alias cosmosdb-emulator-cert -file localhost.crt -keystore cosmosdb-emulator.jks -storepass cosmos
+    ```
+    
+    Place the generated jks file to designed folder.
+1. (Optional) The recommanded IDE is IntelliJ
+
+### Environment variables
+
+| Env Var Name           | Example Value           | Where to Find                       |
+|------------------------|-------------------------|-------------------------------------|
+| `ACCOUNT_HOST`         | `https://localhost:8081`| Azure Cosmos DB Emulator            |
+| `ACCOUNT_KEY`         | `C2y6yDjf5...`          | Azure Cosmos DB Emulator           |
+| `DB_NAME`    | `db-bookworm`            | Your chosen database name           |
+
+### Run the app
+
 1. Clone the repository:
 
    ```sh
    git clone https://github.com/lsong44/BookWorm.git
    cd BookWorm/mainProj
    ```
+
 1. Build the project using Maven
 
     ```sh
     mvn clean install
     ```   
+1. Set the environment variables. There are multiple ways to do it, one of them is to copy the .env.template file from the `.\mainproj` folder to a `.env` file in the same directory, and fill in the values, then pass to IDE debugger. 
 
 1. Run the applicaion
 
     ```sh
-    java -jar target/bookworm-0.0.1-SNAPSHOT.jar
-    ```
-    or
-
-    ```sh
-    mvn spring-boot:run
+    java -jar target/bookworm-0.0.1-SNAPSHOT.jar -Djavax.net.ssl.trustStorePassword=cosmos -Djavax.net.ssl.trustStore=path/to/cosmosdb-emulator.jks
     ```
 
 ## Usage

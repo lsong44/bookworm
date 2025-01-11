@@ -7,6 +7,7 @@ import com.li.bookworm.model.Member;
 import com.li.bookworm.repository.BookLogRepo;
 import com.li.bookworm.repository.MemberRepo;
 import io.micrometer.common.lang.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +19,15 @@ import java.util.List;
 @RequestMapping("/api")
 public class LogBookController {
 
+    @Autowired
+    private BookLogRepo bookLogRepo;
+
+    @Autowired
+    private MemberRepo memberRepo;
+
     @GetMapping("/logs")
     public ResponseEntity<List<BookLog>> listBookLogs(){
-        return new ResponseEntity<>(BookLogRepo.getBookLogs(), HttpStatus.OK);
+        return new ResponseEntity<>(bookLogRepo.getBookLogs(), HttpStatus.OK);
     }
 
     @PostMapping("/log/add")
@@ -28,7 +35,7 @@ public class LogBookController {
                                          @RequestParam String title,
                                          @RequestParam @Nullable String comment,
                                          @RequestParam @Nullable LocalDateTime timestamp){
-        Member member = MemberRepo.getMemberByName(name);
+        Member member = memberRepo.getMemberByName(name);
         if ( member == null){
             return new ResponseEntity<>(ExceptionMessages.MEMBER_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
         }
@@ -39,7 +46,7 @@ public class LogBookController {
         if (timestamp != null) {
             newLog.setTimestamp(timestamp);
         }
-        BookLogRepo.addBookLog(newLog);
+        bookLogRepo.addBookLog(newLog);
         if(member.getLastCheckIn() == null || newLog.getTimestamp().isAfter(member.getLastCheckIn())) {
             member.setLastCheckIn(newLog.getTimestamp());
         }
