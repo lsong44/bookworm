@@ -29,6 +29,15 @@ BookWorm is a simple application designed to help users manage their reading gro
 To install and run the BookWorm application, follow these steps:
 
 1. Install Java-17 Open JDK and Maven 3.8.8 locally
+1. Install Azure Cosmos DB emulator and start the
+1. Set up SSL certificates by first downloading the cert for https://localhost:8081/_explorer/index.html from browser (click the pad lock on left of the url and export cert)
+
+    ```sh
+    keytool -import -alias cosmosdb-emulator-cert -file localhost.crt -keystore cosmosdb-emulator.jks -storepass cosmos
+    ```
+    
+    Place the generated jks file to designed folder.
+
 1. Clone the repository:
 
    ```sh
@@ -44,12 +53,7 @@ To install and run the BookWorm application, follow these steps:
 1. Run the applicaion
 
     ```sh
-    java -jar target/bookworm-0.0.1-SNAPSHOT.jar
-    ```
-    or
-
-    ```sh
-    mvn spring-boot:run
+    java -jar target/bookworm-0.0.1-SNAPSHOT.jar -Djavax.net.ssl.trustStorePassword=cosmos -Djavax.net.ssl.trustStore=C:/path/to/cosmosdb-emulator.jks
     ```
 
 ## Usage

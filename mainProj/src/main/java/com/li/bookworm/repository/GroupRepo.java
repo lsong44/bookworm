@@ -1,25 +1,67 @@
 package com.li.bookworm.repository;
 
+import com.azure.cosmos.CosmosAsyncContainer;
+import com.azure.cosmos.models.CosmosItemRequestOptions;
+import com.azure.cosmos.models.CosmosQueryRequestOptions;
+import com.azure.cosmos.models.PartitionKey;
+import com.azure.cosmos.util.CosmosPagedFlux;
+import com.li.bookworm.model.BookLog;
 import com.li.bookworm.model.Group;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class GroupRepo {
-    public static Map<String, Group> groups = new HashMap<String, Group>();
+    private final CosmosAsyncContainer container;
+    public Map<String, Group> groups;
 
-    public static Map<String, Group> getGroups() {
+    @Autowired
+    public GroupRepo(CosmosAsyncContainer cosmosGroupContainer) {
+        this.container = cosmosGroupContainer;
+        this.groups = loadAllGroups();
+    }
+    public Map<String, Group> getGroups() {
         return groups;
     }
 
-    public static Group getGroupByName(String name) {
+    public Group getGroupByName(String name) {
         return groups.get(name);
     }
 
-    public static void addGroup(Group group) {
+    public void addGroup(Group group) {
         groups.put(group.getName(), group);
+
+        PartitionKey partitionKey = new PartitionKey(group.getName());
+        CosmosItemRequestOptions cosmosItemRequestOptions = new CosmosItemRequestOptions();
+        container.createItem(group, partitionKey, cosmosItemRequestOptions).block();
     }
 
-    public static void deleteGroup(Group group) {
+    public void deleteGroup(Group group) {
         groups.remove(group.getName());
+
+        PartitionKey partitionKey = new PartitionKey(group.getName());
+        CosmosItemRequestOptions cosmosItemRequestOptions = new CosmosItemRequestOptions();
+        container.deleteItem(group.getId().toString(), partitionKey, cosmosItemRequestOptions).block();
+    }
+
+    public void editGroup(Group group) {
+
+        deleteGroup(group);
+        addGroup(group);
+    }
+
+    private Map<String, Group> loadAllGroups() {
+        Map<String, Group> allGroups = new HashMap<>();
+
+        CosmosPagedFlux<Group> pagedFlux = container.queryItems(
+                "SELECT * FROM c", new CosmosQueryRequestOptions(), Group.class);
+
+        pagedFlux.byPage().toIterable().forEach(feedResponse -> {
+            feedResponse.getResults().forEach(group -> allGroups.put(group.getName(), group));
+        });
+
+        return allGroups;
     }
 }
