@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy JAR app to Azure Web App - BookWorm
+name: Build and deploy JAR app to Azure Web App - bookworm
 
 on:
   push:
@@ -23,13 +23,13 @@ jobs:
           distribution: 'microsoft'
 
       - name: Build with Maven
-        run: cd mainProj && mvn clean install
+        run: mvn clean install
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/mainProj/target/*.jar'
+          path: '${{ github.workspace }}/target/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
@@ -49,19 +49,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8730E4085CFD4789BEEE259263376828 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E89E0CA1DB4D4101A5FA1DFB81613D4E }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_833CEE9858484C96B732502101D02E6C }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7403E39A0C2D4D4D89033F52B8AAC699 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_20B10D1A83F742C0970009BF8564AE9A }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_12BB3FF6D83F49168945E06BB11E327B }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'BookWorm'
+          app-name: 'bookworm'
           slot-name: 'Production'
           package: '*.jar'
-          app-settings: |
-            ACCOUNT_KEY=${{ secrets.COSMOSDB_KEY }}
-            ACCOUNT_HOST=${{ secrets.COSMOSDB_HOST }}
-            DB_NAME=db-bookworm
           
