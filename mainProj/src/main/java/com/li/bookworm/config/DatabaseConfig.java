@@ -3,7 +3,9 @@ package com.li.bookworm.config;
 
 import com.azure.cosmos.*;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.ThroughputProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,16 +14,17 @@ import static com.li.bookworm.constants.DatabaseConstants.*;
 @Configuration
 public class DatabaseConfig {
 
-    private final String DB_HOST;
-    private final String DB_KEY;
-    private final String DB_NAME;
+    @Value("${cosmosdb.endpoint}")
+    private String DB_HOST;
 
-    @Autowired
-    public DatabaseConfig() {
-        this.DB_HOST = System.getenv("ACCOUNT_HOST");
-        this.DB_KEY = System.getenv("ACCOUNT_KEY");
-        this.DB_NAME = System.getenv("DB_NAME");
-    }
+    @Value("${cosmosdb.key}")
+    private String DB_KEY;
+
+    @Value("${cosmosdb.database}")
+    private String DB_NAME;
+
+    @Value("${cosmosdb.throughput}")
+    private int THROUGHPUT;
     
 
     @Bean
@@ -70,10 +73,12 @@ public class DatabaseConfig {
     private CosmosAsyncContainer createCosmosContainer(CosmosAsyncDatabase cosmosDatabase,
                                                        String containerName,
                                                        String partitionKey) {
+        
+        ThroughputProperties throughputProperties = ThroughputProperties.createManualThroughput(THROUGHPUT);
         CosmosContainerProperties containerProperties =
                 new CosmosContainerProperties(containerName, partitionKey);
 
-        cosmosDatabase.createContainerIfNotExists(containerProperties).block();
+        cosmosDatabase.createContainerIfNotExists(containerProperties, throughputProperties).block();
         return cosmosDatabase.getContainer(containerName);
     }
 }
