@@ -20,10 +20,19 @@ spec:
         - containerPort: 8080
         env:
         - name: ACCOUNT_HOST
-          value: ${{ secrets.COSMOSDB_HOST }}
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: ACCOUNT_HOST
         - name: ACCOUNT_KEY
-          value: ${{ secrets.COSMOSDB_KEY }}
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: ACCOUNT_KEY
         - name: DB_NAME
-          value: ${{ secrets.COSMOSDB_DBNAME }}
+          valueFrom:
+            secretKeyRef:
+              name: cosmosdb-secret
+              key: DB_NAME
         - name: DB_THROUGHPUT
-          value: ${{ secrets.COSMOSDB_THROUGHPUT }}
+          value: "400"
