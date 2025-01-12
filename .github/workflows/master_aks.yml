@@ -41,7 +41,7 @@ jobs:
     
     - name: Build and push container image
       run: |
-        docker build -f ./mainProj/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookworm:${{ github.sha }} 
+        docker build -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookworm:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookworm:${{ github.sha }}
     
     - name: Set up kubectl
