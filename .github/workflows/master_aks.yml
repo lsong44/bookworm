@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@master
+      uses: actions/checkout@v2
     
     - name: Login to ACR 
       uses: azure/docker-login@v1
@@ -52,6 +52,14 @@ jobs:
       run: |
         kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
     
+    - name: Set up database connection parameters
+      run: |
+        kubectl create secret generic cosmosdb-secret \
+        --from-literal=ACCOUNT_HOST=${{ secrets.COSMOSDB_HOST}} \
+        --from-literal=ACCOUNT_KEY=${{ secrets.COSMOSDB_KEY}} \
+        --from-literal=DB_NAME=${{ secrets.COSMOSDB_DBNAME}} \
+        -n ${{ env.NAMESPACE }}
+
     - name: Create imagepullsecret for ACR
       uses: azure/k8s-create-secret@v1
       with:
