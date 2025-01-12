@@ -5,17 +5,15 @@ FROM mcr.microsoft.com/openjdk/jdk:17-ubuntu
 WORKDIR /app
 
 # Copy the Maven project file from the mainProj directory
-COPY mainProj/pom.xml ./mainProj/
+COPY pom.xml .
 
 # Copy the source code
-COPY mainProj/src ./mainProj/src
+COPY src ./src
 
 # Install Maven
 RUN apt-get update && \
     apt-get install -y maven
 
-# Change to the mainProj directory
-WORKDIR /app/mainProj
 
 # Package the application
 RUN mvn clean package
