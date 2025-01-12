@@ -5,7 +5,7 @@
 # 1. Set up the following secrets in your workspace: 
 #     a. REGISTRY_USERNAME with ACR username
 #     b. REGISTRY_PASSWORD with ACR Password
-#     c. AZURE_CREDENTIALS with the output of `az ad sp create-for-rbac --sdk-auth`
+#     c. AZURE_CREDENTIALS with the output of `az ad sp create-for-rbac --name myAKSClusterServicePrincipal --skd-auth`
 #
 # 2. Change the values for the REGISTRY_NAME, CLUSTER_NAME, CLUSTER_RESOURCE_GROUP and NAMESPACE environment variables (below).
 
@@ -44,6 +44,11 @@ jobs:
         docker buildx build ./mainProj -f ./mainProj/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookworm:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookworm:${{ github.sha }}
     
+  deploy:
+    runs-on: ubuntu-latest
+      needs: build
+      environment: dev
+    steps:
     - name: Set up kubectl
       uses: azure/aks-set-context@v1
       with:
