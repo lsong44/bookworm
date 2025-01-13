@@ -25,7 +25,7 @@ public class BookLogRepo {
     }
 
     public List<BookLog> getBookLogs() {
-        return bookLogs;
+        return loadAllBookLogs();
     }
 
     public void addBookLog(BookLog log) {

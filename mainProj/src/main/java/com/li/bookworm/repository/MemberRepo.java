@@ -24,11 +24,11 @@ public class MemberRepo {
     }
 
     public Map<String, Member> getMembers() {
-        return members;
+        return loadAllMembers();
     }
 
     public Member getMemberByName(String memberName) {
-        return members.get(memberName);
+        return getMembers().get(memberName);
     }
 
     public void addMember(Member member) {

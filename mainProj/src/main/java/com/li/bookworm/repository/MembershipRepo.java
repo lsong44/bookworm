@@ -20,24 +20,25 @@ import java.util.*;
 public class MembershipRepo {
 
     private final CosmosAsyncContainer container;
-    private Map<Tuple<String, String>,List<Membership>> membershipAll;
+//    private Map<Tuple<String, String>,List<Membership>> membershipAll;
 
     @Autowired
     public MembershipRepo(CosmosAsyncContainer cosmosMembershipContainer) {
         this.container = cosmosMembershipContainer;
-        this.membershipAll = loadAllMemberships();
+//        this.membershipAll = loadAllMemberships();
     }
 
     public Map<Tuple<String, String>,List<Membership>> getMembershipAll() {
-        return membershipAll;
+        return loadAllMemberships();
     }
 
     public List<Membership> getMembershipByName(String memberName, String groupName) {
         Tuple<String, String> key = new Tuple<>(memberName, groupName);
-        return membershipAll.get(key);
+        return getMembershipAll().get(key);
     }
 
     public void addMembership(Membership membership){
+        Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
         if (membershipAll.containsKey(membership.getKey())) {
             membershipAll.get(membership.getKey()).add(membership);
         }
@@ -50,21 +51,21 @@ public class MembershipRepo {
     }
 
     public void deleteMembership(Membership membership) {
-        List<Membership> memberships = membershipAll.get(membership.getKey());
+        List<Membership> memberships = getMembershipAll().get(membership.getKey());
         memberships.remove(membership);
 
         PartitionKey partitionKey = new PartitionKey(membership.getGroup().getName());
         container.deleteItem(membership.getId().toString(), partitionKey).block();
 
-        if (memberships.isEmpty()) {
-            membershipAll.remove(membership.getKey());
-        }
+//        if (memberships.isEmpty()) {
+//            membershipAll.remove(membership.getKey());
+//        }
     }
 
     public void editMembershipRole(Membership membership, Role newRole) {
         Role oldRole = membership.getRole();
         Tuple<String, String> key = membership.getKey();
-        List<Membership> memberships = membershipAll.get(key);
+        List<Membership> memberships = getMembershipAll().get(key);
         for(Membership m : memberships) {
             if (m.getRole().getName().equals(oldRole.getName())) {
                 PartitionKey partitionKey = new PartitionKey(m.getGroup().getName());
@@ -90,6 +91,7 @@ public class MembershipRepo {
 
     public List<Membership> getGroupUsers(String groupName) {
         List<Membership> groupUsers = new ArrayList<>();
+        Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
         for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
             String entryGroupName = entry.getKey().second;
             for(Membership entryMembership : entry.getValue()) {
@@ -104,6 +106,7 @@ public class MembershipRepo {
 
     public List<Membership> getWaitlist(String groupName) {
         List<Membership> waitlist = new ArrayList<>();
+        Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
         for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
             String entryGroupName = entry.getKey().second;
             for(Membership entryMembership : entry.getValue()) {
@@ -137,7 +140,7 @@ public class MembershipRepo {
 
     private void deleteMembershipBatch(String keyName, int whichKey) {
         List<Tuple<String, String>> keysToRemove = new ArrayList<>();
-
+        Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
         for (Tuple<String, String> key : membershipAll.keySet()) {
             String currentKeyName = null;
             if (whichKey == 1) currentKeyName = key.first;
