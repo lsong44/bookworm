@@ -15,12 +15,10 @@ import java.util.*;
 @Repository
 public class GroupRepo {
     private final CosmosAsyncContainer container;
-    public Map<String, Group> groups;
 
     @Autowired
     public GroupRepo(CosmosAsyncContainer cosmosGroupContainer) {
         this.container = cosmosGroupContainer;
-        this.groups = loadAllGroups();
     }
     public Map<String, Group> getGroups() {
         return loadAllGroups();

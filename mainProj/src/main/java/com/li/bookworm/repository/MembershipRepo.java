@@ -20,12 +20,10 @@ import java.util.*;
 public class MembershipRepo {
 
     private final CosmosAsyncContainer container;
-//    private Map<Tuple<String, String>,List<Membership>> membershipAll;
 
     @Autowired
     public MembershipRepo(CosmosAsyncContainer cosmosMembershipContainer) {
         this.container = cosmosMembershipContainer;
-//        this.membershipAll = loadAllMemberships();
     }
 
     public Map<Tuple<String, String>,List<Membership>> getMembershipAll() {
@@ -57,9 +55,6 @@ public class MembershipRepo {
         PartitionKey partitionKey = new PartitionKey(membership.getGroup().getName());
         container.deleteItem(membership.getId().toString(), partitionKey).block();
 
-//        if (memberships.isEmpty()) {
-//            membershipAll.remove(membership.getKey());
-//        }
     }
 
     public void editMembershipRole(Membership membership, Role newRole) {
