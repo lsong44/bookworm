@@ -54,6 +54,7 @@ jobs:
     
     - name: Set up database connection parameters
       run: |
+        kubectl get secret cosmosdb-secret -n ${{ env.NAMESPACE }} || \
         kubectl create secret generic cosmosdb-secret \
         --from-literal=ACCOUNT_HOST=${{ secrets.COSMOSDB_HOST}} \
         --from-literal=ACCOUNT_KEY=${{ secrets.COSMOSDB_KEY}} \
