@@ -16,20 +16,17 @@ import java.util.List;
 @Repository
 public class BookLogRepo {
     private final CosmosAsyncContainer container;
-    private List<BookLog> bookLogs;
 
     @Autowired
     public BookLogRepo(CosmosAsyncContainer cosmosBookLogContainer){
         this.container = cosmosBookLogContainer;
-        this.bookLogs = loadAllBookLogs();
     }
 
     public List<BookLog> getBookLogs() {
-        return bookLogs;
+        return loadAllBookLogs();
     }
 
     public void addBookLog(BookLog log) {
-        bookLogs.add(log);
         PartitionKey partitionKey = new PartitionKey(log.getMember().getName());
         CosmosItemRequestOptions cosmosItemRequestOptions = new CosmosItemRequestOptions();
         container.createItem(log, partitionKey, cosmosItemRequestOptions).block();

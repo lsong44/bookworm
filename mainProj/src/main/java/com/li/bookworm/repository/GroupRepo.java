@@ -15,23 +15,21 @@ import java.util.*;
 @Repository
 public class GroupRepo {
     private final CosmosAsyncContainer container;
-    public Map<String, Group> groups;
 
     @Autowired
     public GroupRepo(CosmosAsyncContainer cosmosGroupContainer) {
         this.container = cosmosGroupContainer;
-        this.groups = loadAllGroups();
     }
     public Map<String, Group> getGroups() {
-        return groups;
+        return loadAllGroups();
     }
 
     public Group getGroupByName(String name) {
-        return groups.get(name);
+        return getGroups().get(name);
     }
 
     public void addGroup(Group group) {
-        groups.put(group.getName(), group);
+        getGroups().put(group.getName(), group);
 
         PartitionKey partitionKey = new PartitionKey(group.getName());
         CosmosItemRequestOptions cosmosItemRequestOptions = new CosmosItemRequestOptions();
@@ -39,7 +37,7 @@ public class GroupRepo {
     }
 
     public void deleteGroup(Group group) {
-        groups.remove(group.getName());
+        getGroups().remove(group.getName());
 
         PartitionKey partitionKey = new PartitionKey(group.getName());
         CosmosItemRequestOptions cosmosItemRequestOptions = new CosmosItemRequestOptions();
