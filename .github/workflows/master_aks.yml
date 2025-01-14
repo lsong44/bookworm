@@ -61,6 +61,14 @@ jobs:
         --from-literal=DB_NAME=${{ secrets.COSMOSDB_DBNAME}} \
         -n ${{ env.NAMESPACE }}
 
+    - name: Set up redis cache connection parameters
+      run: |
+        kubectl get secret redis-secret -n ${{ env.NAMESPACE }} || \
+        kubectl create secret generic redis-secret \
+        --from-literal=REDIS_HOST=${{ secrets.REDIS_HOST}} \
+        --from-literal=REDIS_KEY=${{ secrets.REDIS_KEY}} \
+        -n ${{ env.NAMESPACE }}
+
     - name: Create imagepullsecret for ACR
       uses: azure/k8s-create-secret@v1
       with:

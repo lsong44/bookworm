@@ -36,3 +36,17 @@ spec:
               key: DB_NAME
         - name: DB_THROUGHPUT
           value: "400"
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          value: "6380"
+        - name: REDIS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: REDIS_KEY
+        - name: USE_CACHE
+          value: "true"
