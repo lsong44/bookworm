@@ -125,11 +125,11 @@ jobs:
 
     - name: Run tests
       uses: azure/k8s-deploy@v1
-        with:
-          manifests: |
-            manifests/job.yml
-          images: |
-            ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
-          imagepullsecrets: |
-            ${{ env.REGISTRY_NAME }}-registry-connection
-          namespace: ${{ env.NAMESPACE }}
+      with:
+        manifests: |
+          manifests/job.yml
+        images: |
+          ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
+        imagepullsecrets: |
+          ${{ env.REGISTRY_NAME }}-registry-connection
+        namespace: ${{ env.NAMESPACE }}
