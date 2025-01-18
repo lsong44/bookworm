@@ -112,14 +112,14 @@ jobs:
         cluster-name: ${{ env.CLUSTER_NAME }}
         resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
 
-    - name: GetHostIP
+    - name: Get Host IP
       run: |
-        IP_ADDRESS=$(kubectl get service bookworm-service -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        echo $IP_ADDRESS >> $GITHUB_ENV
+        BOOKWORM_SERVICE_IP=$(kubectl get service bookworm-service -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        echo $BOOKWORM_SERVICE_IP >> $GITHUB_ENV
 
     - name: Build and push test container image
       run: |
-        docker buildx build --build-arg HOST=http://${{ env.$IP_ADDRESS }} ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
+        docker buildx build --build-arg HOST=http://${{ env.$BOOKWORM_SERVICE_IP }} ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
 
     - name: Run tests
