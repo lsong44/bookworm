@@ -5,11 +5,10 @@ metadata:
   namespace: bookworm
 spec:
   template:
-    metadata:
-      name: test-job
     spec:
       containers:
       - name: test-container
         image: crbookworm.azurecr.io/imagebookwormtest:${{ github.sha }}
+        command: ["echo", "integration tests for bookworm app is completed"]
       restartPolicy: Never
   backoffLimit: 4
