@@ -111,6 +111,10 @@ jobs:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ env.CLUSTER_NAME }}
         resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+    
+    - name: Delete existing jobs
+      run: |
+        kubectl delete job --all -n ${{ env.NAMESPACE }}
 
     - name: Get Host IP
       run: |
