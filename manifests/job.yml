@@ -5,6 +5,9 @@ metadata:
   namespace: bookworm
 spec:
   template:
+    metadata:
+      lables:
+        job-name: test-job
     spec:
       containers:
       - name: test-container
