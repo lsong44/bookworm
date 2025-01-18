@@ -122,13 +122,6 @@ jobs:
         docker buildx build --build-arg HOST="http://$(GetHostIP.IP_ADDRESS)" ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
 
-    - name: Set up kubectl
-      uses: azure/aks-set-context@v1
-      with:
-        creds: '${{ secrets.AZURE_CREDENTIALS }}'
-        cluster-name: ${{ env.CLUSTER_NAME }}
-        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
-
     - name: Run tests
       uses: azure/k8s-deploy@v1
       with:
