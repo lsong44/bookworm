@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: test-container
-        image: ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
+        image: crbookworm.azurecr.io/imagebookwormtest:${{ github.sha }}
         command: ["mvn", "test"]
         env:
         - name: TEST_HOST
