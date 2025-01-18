@@ -12,6 +12,6 @@ spec:
       containers:
       - name: test-job
         image: crbookworm.azurecr.io/imagebookwormtest:${{ github.sha }}
-        command: ["mvn", "clean test"]
+        command: ["mvn", "clean", "test"]
       restartPolicy: Never
   backoffLimit: 4
