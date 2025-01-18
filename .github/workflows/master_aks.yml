@@ -115,11 +115,11 @@ jobs:
     - name: GetHostIP
       run: |
         IP_ADDRESS=$(kubectl get service bookworm-service -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        echo "##vso[task.setvariable variable=FOO;isOutput=true]$IP_ADDRESS"
+        echo "::set-output name=SERVICE_HOST::$IP_ADDRESS"
 
     - name: Build and push test container image
       run: |
-        docker buildx build --build-arg HOST="http://$(GetHostIP.IP_ADDRESS)" ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
+        docker buildx build --build-arg HOST=http://${{ steps.GetHostIP.outputs.SERVICE_HOST  }} ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
 
     - name: Run tests
