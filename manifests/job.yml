@@ -12,6 +12,6 @@ spec:
       containers:
       - name: test-job
         image: crbookworm.azurecr.io/imagebookwormtest:${{ github.sha }}
-        command: ["echo", "integration tests for bookworm app is completed"]
+        command: ["mvn", "clean test"]
       restartPolicy: Never
   backoffLimit: 4

@@ -15,7 +15,3 @@ COPY src ./src
 # Install Maven
 RUN apt-get update && \
     apt-get install -y maven
-
-
-# Set the entry point to run the tests
-ENTRYPOINT [ "sh", "-c", "mvn clean test" ]

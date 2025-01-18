@@ -116,12 +116,6 @@ jobs:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ env.CLUSTER_NAME }}
         resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
-    
-    # - name: Run tests
-    #   run: |
-    #     kubectl apply -f manifests/job.yml
-    #     kubectl wait --for=condition=complete --timeout=600s job/test-job -n ${{ env.NAMESPACE }}
-    #     kubectl logs job/test-job -n ${{ env.NAMESPACE }}
 
     - name: Run tests
       uses: azure/k8s-deploy@v1
