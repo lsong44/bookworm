@@ -105,9 +105,21 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }} 
         password: ${{ secrets.ACR_PASSWORD }}
     
+    - name: Set up kubectl
+      uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_NAME }}
+        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+
+    - name: GetHostIP
+      run: |
+        IP_ADDRESS=$(kubectl get service bookworm-service -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        echo "IP Address: $IP_ADDRESS"
+
     - name: Build and push test container image
       run: |
-        docker buildx build ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
+        docker buildx build --build-arg HOST="http://$(GetHostIP.IP_ADDRESS)" ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
 
     - name: Set up kubectl
