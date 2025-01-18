@@ -117,8 +117,19 @@ jobs:
         cluster-name: ${{ env.CLUSTER_NAME }}
         resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
     
+    # - name: Run tests
+    #   run: |
+    #     kubectl apply -f manifests/job.yml
+    #     kubectl wait --for=condition=complete --timeout=600s job/test-job -n ${{ env.NAMESPACE }}
+    #     kubectl logs job/test-job -n ${{ env.NAMESPACE }}
+
     - name: Run tests
-      run: |
-        kubectl apply -f manifests/job.yml
-        kubectl wait --for=condition=complete --timeout=600s job/test-job -n ${{ env.NAMESPACE }}
-        kubectl logs job/test-job -n ${{ env.NAMESPACE }}
+      uses: azure/k8s-deploy@v1
+        with:
+          manifests: |
+            manifests/job.yml
+          images: |
+            ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
+          imagepullsecrets: |
+            ${{ env.REGISTRY_NAME }}-registry-connection
+          namespace: ${{ env.NAMESPACE }}
