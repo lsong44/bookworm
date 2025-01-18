@@ -10,7 +10,7 @@ spec:
         job: test-job
     spec:
       containers:
-      - name: test-container
+      - name: test-job
         image: crbookworm.azurecr.io/imagebookwormtest:${{ github.sha }}
         command: ["echo", "integration tests for bookworm app is completed"]
       restartPolicy: Never
