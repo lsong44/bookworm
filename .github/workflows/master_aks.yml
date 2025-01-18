@@ -114,8 +114,7 @@ jobs:
 
     - name: Get Host IP
       run: |
-        BOOKWORM_SERVICE_IP=$(kubectl get service bookworm-service -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        echo $BOOKWORM_SERVICE_IP >> $GITHUB_ENV
+        echo "BOOKWORM_SERVICE_IP=$(kubectl get service bookworm-service -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')" >> $GITHUB_ENV
 
     - name: Build and push test container image
       run: |
