@@ -9,9 +9,5 @@ spec:
       containers:
       - name: test-container
         image: crbookworm.azurecr.io/imagebookwormtest:${{ github.sha }}
-        command: ["mvn", "test"]
-        env:
-        - name: TEST_HOST
-          value: http://64.236.84.242
       restartPolicy: Never
   backoffLimit: 4
