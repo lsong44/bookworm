@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookworm-ingress
+  namespace: bookworm
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
+  rules:
+  - host: bookworm.centralus.cloudapp.azure.com 
+    http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: bookworm
+              port:
+                number: 80
