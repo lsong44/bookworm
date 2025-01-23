@@ -6,9 +6,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: ngix
   rules:
-  - class: nginx
-    host: bookworm.centralus.cloudapp.azure.com 
+  - host: bookworm.centralus.cloudapp.azure.com 
     http:
         paths:
         - path: /
