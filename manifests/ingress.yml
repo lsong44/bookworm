@@ -7,13 +7,14 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: bookworm.centralus.cloudapp.azure.com 
-    http:
-        paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: bookworm-service
-              port:
-                number: 80
+  - class: nginx
+    host: bookworm.centralus.cloudapp.azure.com 
+      http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bookworm-service
+                port:
+                  number: 80
