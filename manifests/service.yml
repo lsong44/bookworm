@@ -4,7 +4,7 @@ metadata:
   name: bookworm-service
   namespace: bookworm
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: bookworm
   ports:
