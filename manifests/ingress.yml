@@ -14,6 +14,6 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: bookworm
+              name: bookworm-service
               port:
                 number: 80
