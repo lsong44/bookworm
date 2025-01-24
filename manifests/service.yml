@@ -3,8 +3,12 @@ kind: Service
 metadata:
   name: bookworm-service
   namespace: bookworm
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: rg-bookworm
+    service.beta.kubernetes.io/azure-pip-name: ip-bookworm
+    service.beta.kubernetes.io/azure-dns-label-name: bookworm
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: bookworm
   ports:
