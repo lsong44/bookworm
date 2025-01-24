@@ -60,3 +60,5 @@ spec:
             secretKeyRef:
               name: oauth-client-id-secret
               key: OAUTH_CLIENT_SECRET
+        - name: HOST
+          value: http://bookworm.centralus.cloudapp.azure.com
