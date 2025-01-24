@@ -1,0 +1,31 @@
+cosmosdb:
+  endpoint: ${ACCOUNT_HOST}
+  key: ${ACCOUNT_KEY}
+  database: ${DB_NAME:db-bookworm}
+  throughput: ${DB_THROUGHTPUT:400}
+
+spring:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6380}
+    password: ${REDIS_KEY:dummykey}
+    ssl: true
+    timeout: ${REDIS_TIMEOUT:10}
+    use: ${USE_CACHE:false}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${OAUTH_CLIENT_ID}
+            client-secret: ${OAUTH_CLIENT_SECRET}
+            scope: profile, email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            authorization-grant-type: authorization_code
+            client-name: Google
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
