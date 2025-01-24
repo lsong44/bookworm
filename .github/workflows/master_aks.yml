@@ -63,7 +63,7 @@ jobs:
 
     - name: Set up oauth client id and secret
       run: |
-        kubectl get secret oauth-client-id -n ${{ env.NAMESPACE }} || \
+        kubectl get secret oauth-client-id-secret -n ${{ env.NAMESPACE }} || \
         kubectl create secret generic oauth-client-id-secret \
         --from-literal=OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID}} \
         --from-literal=OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET}} \
