@@ -17,12 +17,15 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+        opaque-token:
+          introspection-uri: https://oauth2.googleapis.com/tokeninfo
       client:
         registration:
           google:
             client-id: ${OAUTH_CLIENT_ID}
             client-secret: ${OAUTH_CLIENT_SECRET}
-            scope: profile, email
+            scope: profile, email, openid
             redirect-uri: ${HOST}/login/oauth2/code/google
             authorization-grant-type: authorization_code
             client-name: Google
@@ -32,4 +35,3 @@ spring:
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
-            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
