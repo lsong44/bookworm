@@ -26,10 +26,10 @@ public class GroupRepo {
     @Autowired
     private RedisService redisService;
 
-    @Value("${redis.use}")
+    @Value("${spring.redis.use}")
     private boolean USE_CACHE;
 
-    @Value("${redis.timeout}")
+    @Value("${spring.redis.timeout}")
     private int CACHE_TIMEOUT;
 
     @Autowired
