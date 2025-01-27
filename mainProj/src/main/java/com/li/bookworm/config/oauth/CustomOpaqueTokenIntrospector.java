@@ -1,4 +1,4 @@
-package com.li.bookworm.config;
+package com.li.bookworm.config.oauth;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
