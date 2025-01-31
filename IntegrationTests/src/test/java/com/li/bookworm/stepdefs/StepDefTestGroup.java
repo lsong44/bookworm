@@ -3,9 +3,11 @@ package com.li.bookworm.stepdefs;
 import com.li.bookworm.constants.TestConstants;
 import com.li.bookworm.context.HttpContext;
 
+import com.li.bookworm.util.OAuth2TokenUtil;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.BeforeAll;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -25,10 +27,15 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +46,27 @@ public class StepDefTestGroup {
     CloseableHttpClient httpClient;
     CloseableHttpResponse httpResponse;
 
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+//    private static OAuth2TokenUtil oAuth2TokenUtil;
+
+    @Autowired
+    private static OAuth2AuthorizedClient authorizedClient;
+
+    private static String bearerAccessToken;
+
+    private static OAuth2TokenUtil oAuth2TokenUtil = new OAuth2TokenUtil();
+
+    @BeforeAll
+    public static void setUp() throws GeneralSecurityException, IOException, InterruptedException {
+//        oAuth2TokenUtil = new OAuth2TokenUtil();
+//        bearerAccessToken = "Bearer " + oAuth2TokenUtil.getAccessToken();
+        bearerAccessToken = "Bearer " + TestConstants.ACCESS_TOKEN;
+    }
+
     @Before
-    public void setUp() {
+    public void init() {
         httpClient = HttpClients.createDefault();
     }
 
@@ -50,10 +76,13 @@ public class StepDefTestGroup {
         httpClient.close();
     }
 
+
     @Given("I hit POST group API with {string} and {string}")
     public void i_hit_register_group_api_with_string_string(String paramName, String paramVal) throws Exception {
         String registerGroupURL = TestConstants.POST_GROUP_ENDPOINT;
         HttpPost request = new HttpPost(registerGroupURL);
+        request.setHeader("Authorization", bearerAccessToken);
+
         List<NameValuePair> urlParameters = new ArrayList<>();
         urlParameters.add(new BasicNameValuePair(paramName, paramVal));
 
@@ -65,11 +94,20 @@ public class StepDefTestGroup {
     public void i_hit_delete_group_api_with_string_string(String paramName, String paramVal) throws IOException {
         String deleteGroupUrl = TestConstants.DELETE_GROUP_ENPOINT;
         HttpDelete request = new HttpDelete(String.format("%s?%s=%s", deleteGroupUrl, paramName, paramVal));
+        request.setHeader("Authorization", bearerAccessToken);
         this.httpResponse = httpClient.execute(request);
     }
 
     @When("I hit GET groups API")
     public void i_hit_get_groups_api() throws Exception {
+        String getGroupsURL = TestConstants.GET_GROUPS_ENDPOINT;
+        HttpGet request = new HttpGet(getGroupsURL);
+        request.setHeader("Authorization", bearerAccessToken);
+        httpResponse = httpClient.execute(request);
+    }
+
+    @Given("I hit GET groups API with no authorization")
+    public void i_hit_get_groups_api_no_authorization() throws IOException {
         String getGroupsURL = TestConstants.GET_GROUPS_ENDPOINT;
         HttpGet request = new HttpGet(getGroupsURL);
         httpResponse = httpClient.execute(request);

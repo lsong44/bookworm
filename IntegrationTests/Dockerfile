@@ -2,10 +2,12 @@
 FROM mcr.microsoft.com/openjdk/jdk:17-ubuntu
 
 ARG HOST=http://localhost:8080
+ARG ACCESS_TOKEN=placeholder
 # Set the working directory
 WORKDIR /app
 
 ENV TEST_HOST=${HOST}
+ENV TEST_ACCESS_TOKEN=${ACCESS_TOKEN}
 
 # Copy the Maven project file from the mainProj directory
 COPY pom.xml .
