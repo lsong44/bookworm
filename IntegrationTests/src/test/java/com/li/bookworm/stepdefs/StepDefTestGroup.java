@@ -1,9 +1,7 @@
 package com.li.bookworm.stepdefs;
 
 import com.li.bookworm.constants.TestConstants;
-import com.li.bookworm.context.HttpContext;
 
-import com.li.bookworm.util.OAuth2TokenUtil;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -11,31 +9,18 @@ import io.cucumber.java.BeforeAll;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,22 +31,11 @@ public class StepDefTestGroup {
     CloseableHttpClient httpClient;
     CloseableHttpResponse httpResponse;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-//    private static OAuth2TokenUtil oAuth2TokenUtil;
-
-    @Autowired
-    private static OAuth2AuthorizedClient authorizedClient;
 
     private static String bearerAccessToken;
 
-    private static OAuth2TokenUtil oAuth2TokenUtil = new OAuth2TokenUtil();
-
     @BeforeAll
-    public static void setUp() throws GeneralSecurityException, IOException, InterruptedException {
-//        oAuth2TokenUtil = new OAuth2TokenUtil();
-//        bearerAccessToken = "Bearer " + oAuth2TokenUtil.getAccessToken();
+    public static void setUp() {
         bearerAccessToken = "Bearer " + TestConstants.ACCESS_TOKEN;
     }
 
