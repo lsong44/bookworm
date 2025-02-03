@@ -31,14 +31,23 @@ To install and run the BookWorm application locally, follow these steps:
 ### Prerequisites
 
 1. Install Java-17 Open JDK and Maven 3.8.8 locally
-1. Install Azure Cosmos DB emulator and start the emulator
-1. Set up SSL certificate by first downloading the cert for https://localhost:8081/_explorer/index.html from browser (click the pad lock on the left of the url and export the cert), and then convert it to .jks file and set store password with the following command
+1. Database
+    1. Install Azure Cosmos DB emulator and start the emulator
+    1. Set up SSL certificate by first downloading the cert for https://localhost:8081/_explorer/index.html from browser (For example, for chrome, click the pad lock on the left of the url -> "Connection is Secure" -> "Certification is valid" -> "Details" -> "Export" to export the cert), and then convert it to .jks file and set store password with the following command
 
-    ```sh
-    keytool -import -alias cosmosdb-emulator-cert -file localhost.crt -keystore cosmosdb-emulator.jks -storepass cosmos
-    ```
-    
-    Place the generated jks file to designed folder.
+        ```sh
+        keytool -import -alias cosmosdb-emulator-cert -file localhost.crt -keystore local-ssl-keystore.jks -storepass changeit
+        ```
+        
+        Place the generated jks file to designed folder.
+1. Authentication and authorization
+    1. Set up google oauth client based on [tutorial](https://cloud.google.com/solutions/sap/docs/abap-sdk/on-premises-or-any-cloud/latest/authentication-oauth-client-credentials).
+    1. Set up SSL certificate for google JWK set up uri by first downloading the cert for https://www.googleapis.com/oauth2/v3/certs from browser with a similar method as the previous step, save it as "googleapis.crt", and add that cert to the previously created keystore. Note that the keystore name and passwork should match those in previous step:
+
+        ```sh
+        keytool -import -alias cosmosdb-emulator-cert -file googleapis.crt -keystore local-ssl-keystore.jks -storepass changeit
+        ```
+
 1. (Optional) The recommanded IDE is IntelliJ
 
 ### Environment variables
@@ -48,6 +57,10 @@ To install and run the BookWorm application locally, follow these steps:
 | `ACCOUNT_HOST`         | `https://localhost:8081`| Azure Cosmos DB Emulator            |
 | `ACCOUNT_KEY`         | `C2y6yDjf5...`          | Azure Cosmos DB Emulator           |
 | `DB_NAME`    | `db-bookworm`            | Your chosen database name           |
+| `USE_CACHE` | `false` | Whether you run locally or against a cloud resource where Redis is deployed |
+| `OAUTH_CLIENT_ID` | `abcd.apps.googleusercontent.com`| Google oauth client Id|
+| `OAUTH_CLIENT_SECRET`| `GOCSPX...` | Google oauth client secret|
+
 
 ### Run the app
 
@@ -68,8 +81,10 @@ To install and run the BookWorm application locally, follow these steps:
 1. Run the applicaion
 
     ```sh
-    java -jar target/bookworm-0.0.1-SNAPSHOT.jar -Djavax.net.ssl.trustStorePassword=cosmos -Djavax.net.ssl.trustStore=path/to/cosmosdb-emulator.jks
+    java -jar target/bookworm-0.0.1-SNAPSHOT.jar -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=path/to/local-ssl-keystore.jks
     ```
+
+    Note that the keystore is the one created in prerequisite for database and authentication. It's not needed if not running against CosmosDB Emulator.
 
 ## Usage
 Once the application is running, you can access the API endpoints to manage your reading activities.
@@ -99,6 +114,7 @@ Here are some of the main API endpoints available in the BookWorm application:
 ```sh
 curl -X POST "http://localhost:8080/api/group/register" \
      -H "Content-Type: application/x-www-form-urlencoded" \
+     -H "Authentication: Bearer ..."\
      -d "name=GroupA"
  ```
 
@@ -106,6 +122,7 @@ curl -X POST "http://localhost:8080/api/group/register" \
 ```sh
 curl -X POST "http://localhost:8080/api/promote-membership" \
      -H "Content-Type: application/x-www-form-urlencoded" \
+     -H "Authentication: Bearer ..."\
      -d "memberName=JohnDoe&groupName=GroupA"
 ```
 
