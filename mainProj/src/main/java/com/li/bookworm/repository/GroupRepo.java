@@ -12,6 +12,7 @@ import com.li.bookworm.model.Group;
 import com.li.bookworm.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -21,9 +22,11 @@ import java.util.concurrent.TimeUnit;
 @Repository
 public class GroupRepo {
     private final CosmosAsyncContainer container;
-    private final RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired(required = false)
     private RedisService redisService;
 
     @Value("${spring.redis.use}")
@@ -33,11 +36,10 @@ public class GroupRepo {
     private int CACHE_TIMEOUT;
 
     @Autowired
-    public GroupRepo(CosmosAsyncContainer cosmosGroupContainer,
-                     RedisTemplate<String, Object> redisTemplate) {
+    public GroupRepo(CosmosAsyncContainer cosmosGroupContainer) {
         this.container = cosmosGroupContainer;
-        this.redisTemplate = redisTemplate;
     }
+
 
     public Map<String, Group> getGroups() {
         return loadAllGroups();
@@ -94,7 +96,9 @@ public class GroupRepo {
                feedResponse.getResults().forEach(group -> allGroups.put(group.getName(), group));
            });
 
-           redisTemplate.opsForValue().set(CacheKeyConstants.GROUP_ALL_CACHE_KEY, CacheKeyConstants.GROUP_ALL_CACHE_KEY);
+           if (USE_CACHE) {
+               redisTemplate.opsForValue().set(CacheKeyConstants.GROUP_ALL_CACHE_KEY, CacheKeyConstants.GROUP_ALL_CACHE_KEY);
+           }
        }
 
         return allGroups;
