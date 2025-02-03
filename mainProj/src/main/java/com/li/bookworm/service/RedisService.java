@@ -5,6 +5,7 @@ import com.li.bookworm.constants.CacheKeyConstants;
 import com.li.bookworm.model.Group;
 import com.li.bookworm.model.Member;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
+@ConditionalOnProperty(name = "redis.use", havingValue = "true", matchIfMissing = true)
 public class RedisService {
 
     @Autowired
