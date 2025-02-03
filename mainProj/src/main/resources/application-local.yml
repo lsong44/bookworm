@@ -4,14 +4,10 @@ cosmosdb:
   database: ${DB_NAME:db-bookworm}
   throughput: ${DB_THROUGHTPUT:400}
 
+redis:
+  use: false
+
 spring:
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6380}
-    password: ${REDIS_KEY:dummykey}
-    ssl: true
-    timeout: ${REDIS_TIMEOUT:10}
-    use: ${USE_CACHE:false}
   security:
     oauth2:
       resourceserver:
