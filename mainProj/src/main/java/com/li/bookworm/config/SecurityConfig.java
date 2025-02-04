@@ -1,13 +1,14 @@
 package com.li.bookworm.config;
 
-import com.li.bookworm.config.oauth.CustomOpaqueTokenIntrospector;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 
@@ -15,6 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwkUri;
 
     private final String[] AUTH_ALLOWLIST = {
             "/v3/api-docs/**",
@@ -27,17 +31,14 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(request -> request.requestMatchers(AUTH_ALLOWLIST).permitAll()
                         .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer
-                        .opaqueToken(token -> token.introspector(opaqueTokenIntrospector())
-                        )
-                )
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()))
                 .csrf(Customizer.withDefaults());
         return http.build();
     }
 
     @Bean
-    public OpaqueTokenIntrospector opaqueTokenIntrospector() {
-        return new CustomOpaqueTokenIntrospector();
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withJwkSetUri(jwkUri).build();
     }
 
 }

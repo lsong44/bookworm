@@ -130,7 +130,7 @@ jobs:
 
     - name: Build and push test container image
       run: |
-        docker buildx build --build-arg HOST=http://${{ env.BOOKWORM_SERVICE_IP }} ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
+        docker buildx build --build-arg HOST=http://${{ env.BOOKWORM_SERVICE_IP }} --build-arg ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }} --build-arg OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID}} --build-arg OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }} ./IntegrationTests -f ./IntegrationTests/Dockerfile -t ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }} 
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/imagebookwormtest:${{ github.sha }}
 
     - name: Run tests

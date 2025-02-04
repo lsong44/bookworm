@@ -1,6 +1,11 @@
 Feature: To verify group endpoint
 
 @BookwormTest
+Scenario Outline: Verify that BookWorm's GET Groups API requires authorization
+Given I hit GET groups API with no authorization
+Then I get 401 response
+
+@BookwormTest
 Scenario Outline: Verify that BookWorm's POST Group API throws correct exception
 Given I hit POST group API with <ParamName> and <ParamValue>
 Then I get <StatusCode> response
