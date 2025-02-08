@@ -57,7 +57,7 @@ public class MembershipRepo {
 
     }
 
-    public void editMembershipRole(Membership membership, Role newRole) {
+    public Membership editMembershipRole(Membership membership, Role newRole) {
         Role oldRole = membership.getRole();
         Tuple<String, String> key = membership.getKey();
         List<Membership> memberships = getMembershipAll().get(key);
@@ -65,11 +65,28 @@ public class MembershipRepo {
             if (m.getRole().getName().equals(oldRole.getName())) {
                 PartitionKey partitionKey = new PartitionKey(m.getGroup().getName());
                 CosmosItemRequestOptions options = new CosmosItemRequestOptions();
-                container.deleteItem(m.getId().toString(), partitionKey, options);
+                container.deleteItem(m.getId().toString(), partitionKey, options).block();
                 m.setRole(newRole);
-                container.createItem(m, partitionKey, options);
+                container.createItem(m, partitionKey, options).block();
+                return m;
             }
         }
+        return null;
+    }
+
+    public List<Membership> getMembershipByMember(Member member) {
+        String memberName = member.getName();
+        List<Membership> memberships = new ArrayList<>();
+        Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
+        for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
+            String entryMemberName = entry.getKey().first;
+            for(Membership entryMembership : entry.getValue()) {
+                if (entryMemberName.equals(memberName) ) {
+                    memberships.add(entryMembership);
+                }
+            }
+        }
+        return memberships;
     }
 
     public void deleteMembershipByMember(Member member) {
@@ -85,35 +102,31 @@ public class MembershipRepo {
     }
 
     public List<Membership> getGroupUsers(String groupName) {
-        List<Membership> groupUsers = new ArrayList<>();
-        Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
-        for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
-            String entryGroupName = entry.getKey().second;
-            for(Membership entryMembership : entry.getValue()) {
-                Role entryMemberRole = entryMembership.getRole();
-                if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(RoleConstants.USER) ) {
-                    groupUsers.add(entryMembership);
-                }
-            }
-        }
-        return groupUsers;
+        return getGroupMembershipByRoles(groupName, RoleConstants.USER);
     }
 
     public List<Membership> getWaitlist(String groupName) {
-        List<Membership> waitlist = new ArrayList<>();
+        return getGroupMembershipByRoles(groupName, RoleConstants.WAITLIST);
+    }
+
+    public List<Membership> getGroupAdmins(String groupName) {
+        return getGroupMembershipByRoles(groupName, RoleConstants.ADMIN);
+    }
+
+    private List<Membership> getGroupMembershipByRoles(String groupName, String roleName) {
+        List<Membership> memberships = new ArrayList<>();
         Map<Tuple<String, String>,List<Membership>> membershipAll = getMembershipAll();
         for (Map.Entry<Tuple<String, String>, List<Membership>> entry : membershipAll.entrySet()) {
             String entryGroupName = entry.getKey().second;
             for(Membership entryMembership : entry.getValue()) {
                 Role entryMemberRole = entryMembership.getRole();
-                if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(RoleConstants.WAITLIST) ) {
-                    waitlist.add(entryMembership);
+                if (entryGroupName.equals(groupName) && entryMemberRole.getName().equals(roleName) ) {
+                    memberships.add(entryMembership);
                 }
             }
         }
-        return waitlist;
+        return memberships;
     }
-
     private Map<Tuple<String, String>,List<Membership>> loadAllMemberships() {
         Map<Tuple<String, String>,List<Membership>> allMemberships = new HashMap<>();
 

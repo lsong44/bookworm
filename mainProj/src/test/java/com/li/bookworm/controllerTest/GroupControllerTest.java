@@ -56,7 +56,7 @@ public class GroupControllerTest {
 		Group group = new Group("group1");
 		when(groupRepo.getGroups()).thenReturn(Map.of("group1", group));
 
-		ResponseEntity<String> response = groupController.deleteGroup("group1");
+		ResponseEntity<Group> response = groupController.deleteGroup("group1");
 
 		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 		assertEquals(SuccessMessages.DELETE_GROUP_MESSAGE, response.getBody());
@@ -68,7 +68,7 @@ public class GroupControllerTest {
 	public void testDeleteGroupNotFound() {
 		when(groupRepo.getGroups()).thenReturn(new HashMap<>());
 
-		ResponseEntity<String> response = groupController.deleteGroup("group1");
+		ResponseEntity<Group> response = groupController.deleteGroup("group1");
 
 		assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 		assertEquals(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, response.getBody());
@@ -78,7 +78,7 @@ public class GroupControllerTest {
 	public void testAddGroup() {
 		when(groupRepo.getGroups()).thenReturn(new HashMap<>());
 
-		ResponseEntity<String> response = groupController.addGroup("group1");
+		ResponseEntity<Group> response = groupController.addGroup("group1");
 
 		assertEquals(HttpStatus.CREATED, response.getStatusCode());
 		assertEquals(SuccessMessages.ADD_GROUP_MESSAGE, response.getBody());
@@ -89,7 +89,7 @@ public class GroupControllerTest {
 	public void testAddGroupAlreadyExists() {
 		when(groupRepo.getGroups()).thenReturn(Map.of("group1", new Group("group1")));
 
-		ResponseEntity<String> response = groupController.addGroup("group1");
+		ResponseEntity<Group> response = groupController.addGroup("group1");
 
 		assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
 		assertEquals(ExceptionMessages.GROUP_ALREADY_EXISTS_EXCEPTION, response.getBody());
@@ -101,7 +101,7 @@ public class GroupControllerTest {
 		when(groupRepo.getGroups()).thenReturn(Map.of("group1", group));
 		when(membershipRepo.getGroupSize("group1")).thenReturn(5);
 
-		ResponseEntity<String> response = groupController.editGroup("group1", "New Announcement", LocalTime.NOON, 10, 3);
+		ResponseEntity<Group> response = groupController.editGroup("group1", "New Announcement", LocalTime.NOON, 10, 3);
 
 		assertEquals(HttpStatus.CREATED, response.getStatusCode());
 		assertEquals(SuccessMessages.EDIT_GROUP_MESSAGE, response.getBody());
@@ -112,7 +112,7 @@ public class GroupControllerTest {
 	public void testEditGroupNotFound() {
 		when(groupRepo.getGroups()).thenReturn(new HashMap<>());
 
-		ResponseEntity<String> response = groupController.editGroup("group1", "New Announcement", LocalTime.NOON, 10, 3);
+		ResponseEntity<Group> response = groupController.editGroup("group1", "New Announcement", LocalTime.NOON, 10, 3);
 
 		assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 		assertEquals(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, response.getBody());
@@ -124,7 +124,7 @@ public class GroupControllerTest {
 		when(groupRepo.getGroups()).thenReturn(Map.of("group1", group));
 		when(membershipRepo.getGroupSize("group1")).thenReturn(15);
 
-		ResponseEntity<String> response = groupController.editGroup("group1", "New Announcement", LocalTime.NOON, 10, 3);
+		ResponseEntity<Group> response = groupController.editGroup("group1", "New Announcement", LocalTime.NOON, 10, 3);
 
 		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 		assertEquals(ExceptionMessages.GROUP_AT_MAX_CAPACITY, response.getBody());
