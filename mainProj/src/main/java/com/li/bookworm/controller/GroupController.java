@@ -33,30 +33,39 @@ public class GroupController {
 		return new ResponseEntity<>(groupList, HttpStatus.OK);
 	}
 
+	@GetMapping("/group")
+	public ResponseEntity<Group> getGroup(@RequestParam String name) {
+		Group currentGroup = groupRepo.getGroupByName(name);
+		if (currentGroup == null) {
+			return new ResponseEntity<>(new Group(name), HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(currentGroup, HttpStatus.OK);
+	}
+
 	@DeleteMapping("/group/delete")
-	public ResponseEntity<String> deleteGroup(@RequestParam String name) {
+	public ResponseEntity<Group> deleteGroup(@RequestParam String name) {
 		Group existingGroup = groupRepo.getGroups().get(name);
 		if ( existingGroup == null) {
-			return new ResponseEntity<>(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(new Group(name), HttpStatus.NOT_FOUND);
 		}
 		groupRepo.deleteGroup(existingGroup);
 		membershipRepo.deleteMembershipByGroup(existingGroup); // if a group is deleted, remove all membership for that group
-		return new ResponseEntity<>(SuccessMessages.DELETE_GROUP_MESSAGE, HttpStatus.NO_CONTENT);
+		return new ResponseEntity<>(existingGroup, HttpStatus.NO_CONTENT);
 	}
 
 	@PostMapping("/group/register")
-	public ResponseEntity<String> addGroup(@RequestParam String name) {
+	public ResponseEntity<Group> addGroup(@RequestParam String name) {
 
 		if (groupRepo.getGroups().get(name) != null) {
-			return new ResponseEntity<>(ExceptionMessages.GROUP_ALREADY_EXISTS_EXCEPTION, HttpStatus.CONFLICT);
+			return new ResponseEntity<>(new Group(name), HttpStatus.CONFLICT);
 		}
 		Group newGroup = new Group(name);
 		groupRepo.addGroup(newGroup);
-		return new ResponseEntity<>(SuccessMessages.ADD_GROUP_MESSAGE, HttpStatus.CREATED);
+		return new ResponseEntity<>(newGroup, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/group/edit")
-	public ResponseEntity<String> editGroup(@RequestParam String name,
+	public ResponseEntity<Group> editGroup(@RequestParam String name,
 											@RequestParam @Nullable String announcement,
 											@RequestParam @Nullable LocalTime startOfTheDay,
 											@RequestParam @Nullable Integer maxMembers,
@@ -64,7 +73,7 @@ public class GroupController {
 
 		Group existingGroup = groupRepo.getGroups().get(name);
 		if (existingGroup == null) {
-			return new ResponseEntity<>(ExceptionMessages.GROUP_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(new Group(name), HttpStatus.NOT_FOUND);
 		}
 
 		if (announcement != null) existingGroup.setAnnouncement(announcement);
@@ -73,12 +82,12 @@ public class GroupController {
 
 		if (maxMembers != null) {
 			if (membershipRepo.getGroupSize(existingGroup.getName()) > maxMembers) {
-				return new ResponseEntity<>(ExceptionMessages.GROUP_AT_MAX_CAPACITY, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(new Group(name), HttpStatus.BAD_REQUEST);
 			}
 			existingGroup.setMaxMembers(maxMembers);
 		}
 		groupRepo.editGroup(existingGroup);
-		return new ResponseEntity<>(SuccessMessages.EDIT_GROUP_MESSAGE, HttpStatus.CREATED);
+		return new ResponseEntity<>(existingGroup, HttpStatus.CREATED);
 	}
 
 }
