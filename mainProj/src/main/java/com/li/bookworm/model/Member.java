@@ -32,4 +32,21 @@ public class Member{
         this.lastCheckIn = lastCheckIn;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Member other = (Member) obj;
+        return this.getName().equals(other.getName()) && this.getEmail().equals(other.getEmail());
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode() + 31 * name.hashCode() + 11 * email.hashCode();
+    }
+
 }
