@@ -30,14 +30,23 @@ public class LogBookController {
         return new ResponseEntity<>(bookLogRepo.getBookLogs(), HttpStatus.OK);
     }
 
+    @GetMapping("/log")
+    public ResponseEntity<List<BookLog>> getBookLogForMember(@RequestParam String memberName) {
+        Member member = memberRepo.getMemberByName(memberName);
+        if ( member == null){
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(bookLogRepo.getBookLogByMember(member), HttpStatus.OK);
+    }
+
     @PostMapping("/log/add")
-    public ResponseEntity<String> addLog(@RequestParam String name,
+    public ResponseEntity<BookLog> addLog(@RequestParam String memberName,
                                          @RequestParam String title,
                                          @RequestParam @Nullable String comment,
                                          @RequestParam @Nullable LocalDateTime timestamp){
-        Member member = memberRepo.getMemberByName(name);
+        Member member = memberRepo.getMemberByName(memberName);
         if ( member == null){
-            return new ResponseEntity<>(ExceptionMessages.MEMBER_NOT_FOUND_EXCEPTION, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         BookLog newLog = new BookLog(member, title);
         if (comment != null) {
@@ -51,6 +60,6 @@ public class LogBookController {
             member.setLastCheckIn(newLog.getTimestamp());
         }
 
-        return new ResponseEntity<>(SuccessMessages.ADD_BOOK_LOG_MESSAGE, HttpStatus.CREATED);
+        return new ResponseEntity<>(newLog, HttpStatus.CREATED);
     }
 }
